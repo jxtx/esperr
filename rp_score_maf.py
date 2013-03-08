@@ -22,9 +22,10 @@ except:
     pass
 
 import bx.align.maf
-import cookbook.doc_optparse
 import sys
 import traceback
+
+from bx.cookbook import doc_optparse
 
 from numpy import *
 
@@ -99,7 +100,7 @@ def getopt( options, name, default ):
 def main():
 
     # Parse command line
-    options, args = cookbook.doc_optparse.parse( __doc__ )
+    options, args = doc_optparse.parse( __doc__ )
     try:
         data_fname, model_fname, out_fname = args
         window = int( getopt( options, 'window', 100 ) )
@@ -115,7 +116,7 @@ def main():
         reorder = getopt( options, 'reorder', None )
         if reorder: reorder = map( int, reorder.split( ',' ) )
     except:
-        cookbook.doc_optparse.exception()
+        doc_optparse.exception()
 
     out = open( out_fname, "w" )
     run( open( data_fname ), modname, open( model_fname ), out, mapping, window, shift, low, high, reorder )

@@ -18,7 +18,7 @@ gill_code = [ 'pst.c', 'priority_queue.c', 'pfa.c', 'pattern_match.c', 'numrec.c
 gill_code = [ 'third_party/gill_pst/' + l for l in gill_code ]
 
 setup( name = "esperr",
-       version = "0.1.0",
+       version = "0.2.0",
        packages = [ 'rp', 'rp.models' ],
        scripts = [ 'rp_train.py', 'rp_score.py', 'rp_score_maf.py', 'rp_score_maf_BUGGED.py',
                    'rp_score_bed_ints.py', 'rp_cv.py', 'rp_adapt.py', 
