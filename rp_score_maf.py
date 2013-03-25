@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.4
+#!/usr/bin/env python
 
 """
 Score a set of alignments (MAF format) using a model
@@ -14,12 +14,6 @@ usage: %prog data score_matrix out [options]
 """
 
 from __future__ import division
-
-try: 
-    import psyco
-    psyco.full()
-except: 
-    pass
 
 import bx.align.maf
 import sys
@@ -57,9 +51,9 @@ def score_windows( maf, string, model, out, window, shift, low, high ):
     half_window = window // 2
     rc = maf.components[0] 
     text = rc.text
-    # Output position is middle of window
-    abs_pos = rc.start + ( half_window - text.count( '-', 0, half_window ) ) 
-    last_pos = None
+    # Position in genome coordinates
+    abs_pos = rc.start 
+    last_window_center_scored = -1
     chrom = rc.src
     if '.' in chrom: chrom = chrom.split('.')[1]
     # Score array
@@ -74,9 +68,19 @@ def score_windows( maf, string, model, out, window, shift, low, high ):
     for i, c in enumerate( text ):
         if i + window >= len( text ): 
             break
-        if c != '-': 
-            abs_pos += 1
-        if abs_pos % shift == 0:
+        # Don't score windows that start with a gap
+        if c == '-':
+            continue
+        abs_pos += 1
+        # Determine number of reference gaps in window, if more than half, skip
+        gaps_in_window = text.count( '-', i, i + window )
+        if gaps_in_window > half_window:
+            continue
+        # Determine center of window in genome coordinates, if not increasing skip
+        window_center = abs_pos + ( ( window - gaps_in_window ) // 2 )
+        if window_center <= last_window_center_scored:
+            continue
+        if window_center % shift == 0:
             score = sum( scores[i:i+window] )
             ## score = model.score( string, i, window )
             ngood = sum( goodwords[i:i+window] )
@@ -85,12 +89,12 @@ def score_windows( maf, string, model, out, window, shift, low, high ):
             ## print score, ngood
             score = score / ngood
             if score is not None:
-                if abs_pos == last_pos: continue
+                # if abs_pos == last_pos: continue
                 if score > high: score = high
                 elif score < low: score = low
-                print >>out, abs_pos, round( score, 6 )
+                print >> out, window_center, round( score, 6 )
                 ##   print >>out, round( score, 6 )
-                last_pos = abs_pos
+                last_window_center_scored = window_center
 
 def getopt( options, name, default ):
     v = getattr( options, name )
